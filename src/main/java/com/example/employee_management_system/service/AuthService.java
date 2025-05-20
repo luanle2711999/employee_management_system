@@ -5,6 +5,7 @@ import com.example.employee_management_system.dto.request.LoginRequestDto;
 import com.example.employee_management_system.dto.response.LoginResponseDto;
 import com.example.employee_management_system.entity.User;
 import com.example.employee_management_system.exception.BadRequestException;
+import com.example.employee_management_system.exception.DeactivatedException;
 import com.example.employee_management_system.exception.UnauthenticatedErrorException;
 import com.example.employee_management_system.repository.UserRepository;
 import com.nimbusds.jose.*;
@@ -43,6 +44,9 @@ public class AuthService {
         boolean isMatch = passwordEncoder.matches(loginRequestDto.getPassword(), existingUser.getPassword());
         if (!isMatch) {
             throw new UnauthenticatedErrorException("Unauthenticated!");
+        }
+        if(!existingUser.getIsActive()){
+            throw new DeactivatedException("User is not active.");
         }
         String jwtToken = generateToken(existingUser);
         return LoginResponseDto.builder()

@@ -10,12 +10,14 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.NonFinal;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import javax.crypto.spec.SecretKeySpec;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +25,11 @@ import java.util.Set;
 public class PermissionService {
     PermissionRepository permissionRepository;
     PermissionMapper permissionMapper;
+    @NonFinal
+    @Value("${jwt.signerKey}")
+    private String SIGNED_KEY;
+
+
 
     public Permission createPermission(PermissionCreationDto permissionCreationDto) {
         Permission newPermission = permissionMapper.toPermission(permissionCreationDto);
@@ -42,5 +49,19 @@ public class PermissionService {
 
         }
         return new HashSet<>(permissions);
+    }
+    public List<Permission> findAllPermissions() {
+        return permissionRepository.findAll();
+    }
+
+    public Set<Permission> findMyPermissions(String token) {
+        SecretKeySpec secretKeySpec = new SecretKeySpec(SIGNED_KEY.getBytes(), "HS512");
+        NimbusJwtDecoder parsedToken = NimbusJwtDecoder.withSecretKey(secretKeySpec)
+                .macAlgorithm(MacAlgorithm.HS512)
+                .build();
+        var decodedToken = parsedToken.decode(token);
+        String permissionNames = decodedToken.getClaim("permissions");
+        Set<String> listPermissions = new HashSet<>(Arrays.asList(permissionNames.split(",")));
+        return findPermissionsByNames(listPermissions);
     }
 }

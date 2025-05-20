@@ -1,6 +1,7 @@
 package com.example.employee_management_system.controller;
 
 import com.example.employee_management_system.common.ApiResponse;
+import com.example.employee_management_system.dto.request.DeactivateUserDto;
 import com.example.employee_management_system.dto.request.UserCreationRequestDto;
 import com.example.employee_management_system.dto.response.UserResponseDto;
 import com.example.employee_management_system.entity.User;
@@ -12,9 +13,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -36,11 +40,24 @@ public class UserController {
                           .build();
     }
 
+    @PostMapping("/deactivate")
+    public ApiResponse<Boolean> deactivateUser(@RequestBody @Valid DeactivateUserDto deactivateUserDto) {
+        userService.deactivateUser(deactivateUserDto.getUsername());
+        return ApiResponse.<Boolean>builder().message("Deactivated successfully").status(200).build();
+    }
+
     @GetMapping
     public ApiResponse<List<UserResponseDto>> getAllUsers() {
-        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        var authentication = SecurityContextHolder.getContext()
+                                                  .getAuthentication();
         log.info("Username" + authentication.getName());
-        authentication.getAuthorities().stream().forEach(item -> log.info(item.getAuthority()));
+        if (authentication.getPrincipal() instanceof Jwt jwt) {
+            String permissionsStr = jwt.getClaimAsString("permissions");
+            log.info(permissionsStr);
+        }
+        authentication.getAuthorities()
+                      .stream()
+                      .forEach(item -> log.info(item.getAuthority()));
         List<User> allUsers = userService.getAllUsers();
         List<UserResponseDto> allUserReponse = allUsers.stream()
                                                        .map(userMapper::toUserResponse)

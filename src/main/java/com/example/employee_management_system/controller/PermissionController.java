@@ -8,10 +8,10 @@ import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/permission")
@@ -28,5 +28,18 @@ public class PermissionController {
                           .message("Permission created successfully!")
                           .status(200)
                           .build();
+    }
+
+    @GetMapping
+    public ApiResponse<List<Permission>> getAllPermissions() {
+        List<Permission> permissions = permissionService.findAllPermissions();
+        return ApiResponse.<List<Permission>>builder().data(permissions).status(200).message("Get permissions successfully!").build();
+    }
+
+    @GetMapping("/my_permissions")
+    public ApiResponse<Set<Permission>> getMyPermissions(@RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.startsWith("Bearer ") ? authHeader.substring(7) : authHeader;
+        Set<Permission> permissions = permissionService.findMyPermissions(token);
+        return ApiResponse.<Set<Permission>>builder().message("Get permissions successfully!").status(200).data(permissions).build();
     }
 }

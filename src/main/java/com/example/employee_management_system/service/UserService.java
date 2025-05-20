@@ -49,7 +49,19 @@ public class UserService {
         return userRepository.save(newUser);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('USER_DEACTIVATE')")
+    public boolean deactivateUser(String username) {
+        try {
+            User existingUser = userRepository.findByUsername(username).orElseThrow(() -> new BadRequestException("User does not exist"));
+            existingUser.setIsActive(false);
+            userRepository.save(existingUser);
+            return true;
+        }catch (Exception e){
+            return false;
+        }
+    }
+
+    @PreAuthorize("hasAuthority('EMPLOYEE_VIEW')")
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }

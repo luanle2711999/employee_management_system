@@ -2,6 +2,7 @@ package com.example.employee_management_system.common;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;

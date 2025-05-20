@@ -1,5 +1,8 @@
 package com.example.employee_management_system.enums;
 
+import lombok.Getter;
+
+@Getter
 public enum PermissionName {
     EMPLOYEE_VIEW("View employee profiles and details"),
     EMPLOYEE_CREATE("Add new employee records"),
@@ -31,15 +34,13 @@ public enum PermissionName {
     DEVICE_ASSIGN("Assign a device to an employee"),
     DEVICE_REVOKE("Revoke or unassign a device from an employee"),
 
-    TOOL_ACCESS_MANAGE("Manage access rights to tools and applications");
+    TOOL_ACCESS_MANAGE("Manage access rights to tools and applications"),
+    USER_DEACTIVATE("Allow deactivating user accounts");
 
-    private String description;
+    private final String description;
 
     PermissionName(String description) {
         this.description = description;
     }
 
-    public String getDescription() {
-        return description;
-    }
 }
