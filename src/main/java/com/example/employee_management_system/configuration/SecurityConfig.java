@@ -2,6 +2,7 @@ package com.example.employee_management_system.configuration;
 
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,11 +11,9 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
@@ -22,9 +21,7 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtGra
 import org.springframework.security.web.SecurityFilterChain;
 
 import javax.crypto.spec.SecretKeySpec;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.stream.Collectors;
 
@@ -37,20 +34,18 @@ public class SecurityConfig {
     @Value("${jwt.signerKey}")
     private String SIGNED_KEY;
 
-    private final String[] PUBLIC_ENDPOINTS = {"/auth/login", "/auth/introspect"};
+    @Autowired
+    CustomJwtDecoder customJwtDecoder;
 
-    @Bean
-    public BCryptPasswordEncoder bCryptPasswordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+    private final String[] PUBLIC_ENDPOINTS = {"/auth/login", "/auth/introspect"};
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity, CustomAccessDeniedHandler accessDeniedHandler) throws Exception {
         httpSecurity.authorizeHttpRequests(request -> {
             request.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS)
-                   .permitAll()
-                   .anyRequest()
-                   .authenticated();
+                    .permitAll()
+                    .anyRequest()
+                    .authenticated();
 
         });
         httpSecurity.exceptionHandling((exceptions) -> {
@@ -58,9 +53,9 @@ public class SecurityConfig {
         });
 
         httpSecurity.oauth2ResourceServer(oauth2 -> {
-            oauth2.jwt(jwtConfigurer -> jwtConfigurer.decoder(jwtDecoder())
-                                                     .jwtAuthenticationConverter(jwtAuthenticationConverter()))
-                  .authenticationEntryPoint(new JwtAuthenticationEntryPoint());
+            oauth2.jwt(jwtConfigurer -> jwtConfigurer.decoder(customJwtDecoder)
+                            .jwtAuthenticationConverter(jwtAuthenticationConverter()))
+                    .authenticationEntryPoint(new JwtAuthenticationEntryPoint());
         });
         httpSecurity.csrf(AbstractHttpConfigurer::disable);
         return httpSecurity.build();
@@ -79,18 +74,11 @@ public class SecurityConfig {
             }
 
             return Arrays.stream(permissions.split(","))
-                         .map(String::trim)
-                         .map(SimpleGrantedAuthority::new)
-                         .collect(Collectors.toList());
+                    .map(String::trim)
+                    .map(SimpleGrantedAuthority::new)
+                    .collect(Collectors.toList());
         });
         return jwtAuthenticationConverter;
     }
 
-    @Bean
-    JwtDecoder jwtDecoder() {
-        SecretKeySpec secretKeySpec = new SecretKeySpec(SIGNED_KEY.getBytes(), "HS512");
-        return NimbusJwtDecoder.withSecretKey(secretKeySpec)
-                               .macAlgorithm(MacAlgorithm.HS512)
-                               .build();
-    }
 }

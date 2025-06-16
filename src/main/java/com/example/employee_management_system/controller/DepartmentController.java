@@ -3,11 +3,10 @@ package com.example.employee_management_system.controller;
 import com.example.employee_management_system.common.ApiResponse;
 import com.example.employee_management_system.dto.request.DepartmentCreationDto;
 import com.example.employee_management_system.entity.Department;
-import com.example.employee_management_system.service.DepartmentService;
+import com.example.employee_management_system.service.impl.DepartmentServiceImpl;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 import lombok.experimental.FieldDefaults;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,11 +18,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class DepartmentController {
-    DepartmentService departmentService;
+    DepartmentServiceImpl departmentServiceImpl;
 
     @PostMapping
     public ApiResponse<Department> createDepartment(@RequestBody @Valid DepartmentCreationDto departmentCreationDto) {
-        Department newDepartment = departmentService.createDepartment(departmentCreationDto);
+        Department newDepartment = departmentServiceImpl.createDepartment(departmentCreationDto);
         return ApiResponse.<Department>builder()
                           .data(newDepartment)
                           .status(200)

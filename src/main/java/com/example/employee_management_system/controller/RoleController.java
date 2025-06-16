@@ -3,7 +3,7 @@ package com.example.employee_management_system.controller;
 import com.example.employee_management_system.common.ApiResponse;
 import com.example.employee_management_system.dto.request.RoleCreationDto;
 import com.example.employee_management_system.entity.Role;
-import com.example.employee_management_system.service.RoleService;
+import com.example.employee_management_system.service.impl.RoleServiceImpl;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -18,11 +18,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class RoleController {
-    RoleService roleService;
+    RoleServiceImpl roleServiceImpl;
 
     @PostMapping
     public ApiResponse<Role> createRole(@RequestBody @Valid RoleCreationDto roleCreationDto) {
-        Role newRole = roleService.createRole(roleCreationDto);
+        Role newRole = roleServiceImpl.createRole(roleCreationDto);
         return ApiResponse.<Role>builder()
                           .data(newRole)
                           .status(200)

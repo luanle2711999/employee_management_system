@@ -24,16 +24,25 @@ public class AuthController {
     public ApiResponse<LoginResponseDto> login(@RequestBody @Valid LoginRequestDto loginRequestDto) {
         LoginResponseDto loginResponseDto = authService.login(loginRequestDto);
         return ApiResponse.<LoginResponseDto>builder()
-                          .data(loginResponseDto)
-                          .message("Log in Successfully!")
-                          .status(200)
-                          .data(loginResponseDto)
-                          .build();
+                .data(loginResponseDto)
+                .message("Log in Successfully!")
+                .status(200)
+                .data(loginResponseDto)
+                .build();
     }
 
     @PostMapping("/introspect")
     public ApiResponse<Boolean> introspect(@RequestHeader("Authorization") String authHeader) throws ParseException, JOSEException {
         String token = authHeader.startsWith("Bearer ") ? authHeader.substring(7) : authHeader;
         return authService.introspect(token);
+    }
+
+    @PostMapping("/refresh")
+    public ApiResponse<LoginResponseDto> refresh(@RequestHeader("Authorization") String authHeader) throws ParseException {
+        String token = authHeader.startsWith("Bearer ") ? authHeader.substring(7) : authHeader;
+        LoginResponseDto loginResponseDto = authService.refreshToken(token);
+        return ApiResponse.<LoginResponseDto>builder()
+                .data(loginResponseDto)
+                .build();
     }
 }

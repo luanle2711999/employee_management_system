@@ -6,7 +6,7 @@ import com.example.employee_management_system.dto.request.UserCreationRequestDto
 import com.example.employee_management_system.dto.response.UserResponseDto;
 import com.example.employee_management_system.entity.User;
 import com.example.employee_management_system.mapper.UserMapper;
-import com.example.employee_management_system.service.UserService;
+import com.example.employee_management_system.service.impl.UserServiceImpl;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -16,9 +16,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -26,12 +24,12 @@ import java.util.stream.Collectors;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
 public class UserController {
-    UserService userService;
+    UserServiceImpl userServiceImpl;
     UserMapper userMapper;
 
     @PostMapping
     public ApiResponse<UserResponseDto> createUser(@RequestBody @Valid UserCreationRequestDto userCreationRequestDto) {
-        User user = userService.createUser(userCreationRequestDto);
+        User user = userServiceImpl.createUser(userCreationRequestDto);
         UserResponseDto userResponseDto = userMapper.toUserResponse(user);
         return ApiResponse.<UserResponseDto>builder()
                           .data(userResponseDto)
@@ -42,7 +40,7 @@ public class UserController {
 
     @PostMapping("/deactivate")
     public ApiResponse<Boolean> deactivateUser(@RequestBody @Valid DeactivateUserDto deactivateUserDto) {
-        userService.deactivateUser(deactivateUserDto.getUsername());
+        userServiceImpl.deactivateUser(deactivateUserDto.getUsername());
         return ApiResponse.<Boolean>builder().message("Deactivated successfully").status(200).build();
     }
 
@@ -58,7 +56,7 @@ public class UserController {
         authentication.getAuthorities()
                       .stream()
                       .forEach(item -> log.info(item.getAuthority()));
-        List<User> allUsers = userService.getAllUsers();
+        List<User> allUsers = userServiceImpl.getAllUsers();
         List<UserResponseDto> allUserReponse = allUsers.stream()
                                                        .map(userMapper::toUserResponse)
                                                        .toList();
